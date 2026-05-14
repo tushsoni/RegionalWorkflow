@@ -1,0 +1,2770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f0f2f5;
+  color: #1e293b;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========== TOP NAVBAR ========== */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 44px;
+  background: linear-gradient(135deg, #1a1f36 0%, #252b48 100%);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+.topnav-left, .topnav-right { display: flex; align-items: center; gap: 8px; }
+.app-logo { height: 26px; width: auto; border-radius: 4px; }
+.nav-divider { width: 1px; height: 20px; background: rgba(255,255,255,.15); margin: 0 4px; }
+.nav-label { color: #cbd5e1; font-size: 12.5px; font-weight: 500; }
+.nav-caret { color: #64748b; font-size: 16px !important; }
+.nav-icon-sm { color: #94a3b8; font-size: 16px !important; }
+.nav-icon { color: #94a3b8; font-size: 20px; cursor: pointer; transition: color .2s; }
+.nav-icon:hover { color: #e2e8f0; }
+.weather-badge {
+  display: flex; align-items: center; gap: 4px;
+  color: #fbbf24; font-size: 12px; font-weight: 600;
+}
+.time-badge { color: #94a3b8; font-size: 12px; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+.time-badge sup { font-size: 9px; }
+.avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+/* ========== LEFT SIDEBAR ========== */
+.sidebar {
+  position: fixed; top: 44px; left: 0; bottom: 0;
+  width: 42px;
+  background: #1e2340;
+  display: flex; flex-direction: column; align-items: center;
+  padding-top: 12px; gap: 4px;
+  z-index: 90;
+}
+.sidebar-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #64748b; cursor: pointer; transition: all .2s;
+}
+.sidebar-icon:hover { color: #cbd5e1; background: rgba(255,255,255,.06); }
+.sidebar-icon.active { color: #818cf8; background: rgba(129,140,248,.12); }
+.sidebar-icon .material-icons-outlined { font-size: 20px; }
+
+/* ========== MAIN CONTENT ========== */
+.main-content {
+  margin-top: 44px;
+  margin-left: 42px;
+  padding: 10px 14px 20px;
+  min-height: calc(100vh - 44px);
+}
+
+/* ========== TOOLBAR ========== */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap; gap: 8px;
+}
+.toolbar-left { display: flex; align-items: center; gap: 10px; }
+.toolbar-right { display: flex; align-items: center; gap: 12px; }
+
+.filter-dropdown {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 6px; padding: 6px 12px;
+  font-size: 12.5px; font-weight: 500; color: #475569;
+  cursor: pointer; transition: border-color .2s;
+}
+.filter-dropdown:hover { border-color: #94a3b8; }
+
+.date-nav { display: flex; align-items: center; gap: 2px; }
+.date-arrow {
+  width: 28px; height: 28px; border: 1px solid #e2e8f0; background: #fff;
+  border-radius: 5px; font-size: 16px; color: #64748b;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.date-arrow:hover { background: #f1f5f9; color: #334155; }
+.date-picker {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 5px; padding: 6px 10px;
+  font-size: 12px; color: #475569; font-weight: 500;
+  cursor: pointer;
+  position: relative;
+}
+.date-picker:hover { background: #f8fafc; border-color: #cbd5e1; }
+.date-range-popup { position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 500; display: none; width: 220px; }
+.date-range-popup.visible { display: block; }
+.date-range-popup .range-title { font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
+.date-range-popup .date-input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.date-range-popup .date-input-group label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.date-range-popup .date-input-group input { padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; font-family: JetBrains Mono, monospace; }
+.date-range-popup .date-input-group input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+.date-range-popup .popup-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.date-range-popup .popup-btn { padding: 5px 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.date-range-popup .popup-btn.cancel { background: #f1f5f9; color: #475569; }
+.date-range-popup .popup-btn.cancel:hover { background: #e2e8f0; }
+.date-range-popup .popup-btn.apply { background: #3b82f6; color: white; border-color: #3b82f6; }
+.date-range-popup .popup-btn.apply:hover { background: #2563eb; border-color: #2563eb; }
+
+.toolbar-actions { display: flex; align-items: center; gap: 4px; }
+.action-icon {
+  font-size: 20px; cursor: pointer; border-radius: 6px;
+  padding: 4px; transition: background .2s;
+}
+.alert-icon { color: #ef4444; background: rgba(239,68,68,.08); }
+.alert-icon:hover { background: rgba(239,68,68,.15); }
+.info-icon { color: #3b82f6; }
+.info-icon:hover { background: rgba(59,130,246,.08); }
+
+/* Toggle */
+.toggle-label { font-size: 12.5px; font-weight: 600; color: #475569; user-select: none; }
+.toggle-switch { position: relative; width: 40px; height: 22px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #cbd5e1; border-radius: 22px;
+  cursor: pointer; transition: background .3s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px;
+  background: #fff; border-radius: 50%;
+  transition: transform .3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+.toggle-switch input:checked + .toggle-slider { background: #22c55e; }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+.settings-gear { color: #64748b; font-size: 22px; cursor: pointer; transition: color .2s; }
+.settings-gear:hover { color: #334155; }
+
+/* ========== KPI TILES ========== */
+.tiles-container {
+  display: flex; gap: 8px;
+  overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.tiles-container::-webkit-scrollbar { height: 4px; }
+.tiles-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+.tile {
+  min-width: 160px; max-width: 180px; flex: 1 0 160px;
+  background: #fff;
+  border: 1px solid #e8ecf1;
+  border-radius: 10px;
+  padding: 12px 14px 10px;
+  position: relative;
+  transition: box-shadow .25s, transform .25s;
+  cursor: default;
+}
+.tile:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.07);
+  transform: translateY(-1px);
+}
+.tile-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.tile-name {
+  font-size: 11.5px; font-weight: 600; color: #475569;
+  display: flex; align-items: center; gap: 6px;
+}
+.tile-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tile-chart-icon {
+  width: 22px; height: 22px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .2s;
+}
+.tile-chart-icon:hover { background: #f1f5f9; }
+.tile-chart-icon .material-icons-outlined { font-size: 16px; color: #3b82f6; }
+
+.tile-value {
+  font-size: 18px; font-weight: 700; color: #1e293b;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -.3px;
+}
+
+.tile-footer {
+  display: flex; justify-content: space-between;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 7px;
+}
+.tile-sub { text-align: center; flex: 1; }
+.tile-sub-label { font-size: 9.5px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: .4px; }
+.tile-sub-value { font-size: 11.5px; font-weight: 600; color: #334155; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+
+.dot-green { background: #22c55e; }
+.dot-teal { background: #14b8a6; }
+.dot-blue { background: #3b82f6; }
+.dot-purple { background: #8b5cf6; }
+.dot-orange { background: #f97316; }
+.dot-amber { background: #f59e0b; }
+.dot-red { background: #ef4444; }
+.dot-indigo { background: #6366f1; }
+.dot-cyan { background: #06b6d4; }
+.dot-pink { background: #ec4899; }
+
+/* ========== REGIONAL SECTION ========== */
+.regional-section {
+  margin-top: 12px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  animation: fadeSlideUp .4s ease;
+}
+.regional-section.hidden { display: none; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.regional-header {
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f1f5f9;
+  background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+}
+.regional-title { display: flex; align-items: center; gap: 8px; }
+.regional-title .material-icons-outlined { color: #6366f1; font-size: 22px; }
+.regional-title h3 { font-size: 13px; font-weight: 700; color: #1e293b; }
+
+.regional-expand-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #6366f1;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.regional-expand-btn:hover {
+  background: #f0f4f9;
+  color: #4f46e5;
+  transform: scale(1.1);
+}
+
+.regional-section.expanded {
+  margin: 0;
+  border-radius: 12px;
+  z-index: auto;
+  width: 100%;
+  height: auto;
+  border: 1px solid #e2e8f0;
+}
+
+.regional-section.expanded .regional-header {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.regional-section.expanded .table-wrapper {
+  height: 500px;
+  overflow-y: auto;
+  border-top: 1px solid #f1f5f9;
+}
+
+#performanceContainer.hidden-expanded {
+  display: none !important;
+}
+
+.main-content.expanded-view {
+  overflow-y: auto;
+}
+
+.regional-stats { display: flex; gap: 10px; margin-left: auto; }
+.stat-badges-container {
+  display: none;
+  gap: 8px;
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.stat-tile {
+  flex: 1; min-width: 120px; max-width: 160px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; transition: all .2s;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.stat-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+.stat-tile.total {
+  border-color: #c7d2fe;
+  color: #4f46e5;
+}
+
+.stat-tile.total .stat-icon { background: rgba(79, 70, 229, .1); }
+
+.stat-tile.delayed {
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.stat-tile.delayed .stat-icon { background: rgba(220, 38, 38, .1); }
+
+.stat-tile.pending {
+  border-color: #fef08a;
+  color: #ca8a04;
+}
+
+.stat-tile.pending .stat-icon { background: rgba(202, 138, 4, .1); }
+
+.stat-tile.completed {
+  border-color: #bbf7d0;
+  color: #16a34a;
+}
+
+.stat-tile.completed .stat-icon { background: rgba(22, 163, 74, .1); }
+
+.stat-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon .material-icons-outlined { font-size: 16px; }
+
+.stat-content { display: flex; flex-direction: column; gap: 2px; }
+
+.stat-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .4px; opacity: .8;
+}
+
+.stat-value {
+  font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -.4px;
+}
+
+.regional-filters { display: none; }
+
+/* Performance Section */
+.performance-container {
+  margin-bottom: 16px;
+  padding: 0 12px;
+}
+
+.performance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.performance-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.performance-left-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.perf-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.perf-title h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.perf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.performance-right-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.performance-right-container:nth-of-type(1) {
+  flex: 2.5;
+  min-height: 0;
+}
+
+.performance-right-container:nth-of-type(2) {
+  flex: 1;
+  min-height: 0;
+}
+
+.performance-right-container:last-child .regional-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.performance-right-container h3 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  flex-shrink: 0;
+}
+
+.performance-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 280px;
+}
+
+.performance-card {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.performance-card:last-child {
+  border-right: none;
+}
+
+.performance-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.performance-header:last-child {
+  border-right: none;
+}
+
+.performance-header h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+.performance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.performance-table thead {
+  background: #f1f5f9;
+  position: sticky;
+  top: 0;
+}
+
+.performance-table th {
+  padding: 6px 8px;
+  text-align: left;
+  font-size: 8px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.performance-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 10px;
+}
+
+.performance-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.performance-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+.performance-rank.negative {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.performance-rank.negative {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.performance-details {
+  flex: 1;
+}
+
+.store-name {
+  font-size: 9px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+.store-city {
+  font-size: 8px;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.store-stats {
+  font-size: 9px;
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.performance-score {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: #94a3b8;
+}
+
+.performance-percentage {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: #3b82f6;
+}
+
+.performance-delayed {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: #dc2626;
+}
+
+.view-all-link {
+  font-size: 9px;
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  border: 1px solid #e5e9f0;
+  cursor: pointer;
+  transition: all .3s cubic-bezier(.4, 0, .2, 1);
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.metric-box:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f9 100%);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.metric-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  opacity: 1;
+  transition: all .2s ease;
+}
+
+.metric-box:hover .metric-arrow {
+  color: #2563eb;
+  transform: translateY(-50%) translateX(2px);
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.metric-icon .material-icons-outlined {
+  font-size: 20px;
+}
+
+.metric-content {
+  flex: 1;
+  padding-right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12px;
+  color: #64748b;
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+.metric-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: #0f172a;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.2;
+  letter-spacing: -.5px;
+}
+
+.metric-pct {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 2px;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.regional-summary {
+  display: flex;
+  gap: 10px;
+  padding-top: 0;
+  border-top: none;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1px;
+  color: #94a3b8;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e293b;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+
+@media (max-width: 900px) {
+  .performance-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .perf-grid {
+    grid-template-columns: 1fr;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Table */
+.table-wrapper { \n  overflow-x: auto; \n  padding: 0 8px; \n  transition: height 0.3s ease;\n}
+.regional-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.regional-table thead th {
+  background: #f8fafc;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
+}
+.regional-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background .15s;
+}
+.regional-table tbody tr:hover { background: #f8fafc; }
+.regional-table tbody tr.row-delayed { background: #fff7f7; }
+.regional-table tbody tr.row-delayed:hover { background: #fef0f0; }
+.regional-table td {
+  padding: 7px 10px;
+  vertical-align: middle;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.status-pill.delayed { background: #fef2f2; color: #dc2626; }
+.status-pill.pending { background: #fefce8; color: #ca8a04; }
+.status-pill.completed { background: #f0fdf4; color: #16a34a; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-dot.delayed { background: #ef4444; }
+.status-dot.pending { background: #eab308; }
+.status-dot.completed { background: #22c55e; }
+
+.task-name-cell { font-weight: 600; color: #1e293b; }
+.module-badge {
+  display: inline-block; padding: 2px 6px; border-radius: 3px;
+  font-size: 10px; font-weight: 600; background: #f0f4ff; color: #4f46e5;
+}
+.type-badge { font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .2px; }
+.type-mandatory { color: #dc2626; }
+.type-optional { color: #64748b; }
+.objects-count { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; color: #334155; }
+.objects-zero { color: #94a3b8; }
+.due-time { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: #475569; }
+.delay-cell { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; }
+.delay-late { color: #dc2626; }
+.delay-none { color: #94a3b8; }
+
+/* ========== GROUP HEADER ========== */
+.group-header-row {
+  background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+}
+.group-header-row:hover { background: linear-gradient(90deg, #f0f4f8 0%, #eaf0f6 100%); }
+.group-header-row td {
+  padding: 8px 10px;
+  font-weight: 700;
+  color: #334155;
+  font-size: 12px;
+}
+.group-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 16px;
+  transition: all .2s;
+  margin-right: 8px;
+}
+.group-header-row:hover .group-toggle { background: #cbd5e1; }
+.group-toggle.expanded { transform: rotate(90deg); }
+
+.group-content-row { display: none; }
+.group-content-row.visible { display: table-row; }
+
+/* ========== STATUS MODAL ========== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-overlay.active { display: flex; }
+
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  animation: slideUp .3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modal-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+
+.modal-close {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #64748b;
+  font-size: 24px;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+.modal-close:hover { background: #e2e8f0; color: #334155; }
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.status-section {
+  margin-bottom: 20px;
+}
+.status-section:last-child { margin-bottom: 0; }
+
+.status-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid;
+}
+
+.status-section-title.completed { color: #16a34a; border-bottom-color: #bbf7d0; }
+.status-section-title.pending { color: #ca8a04; border-bottom-color: #fef08a; }
+.status-section-title.delayed { color: #dc2626; border-bottom-color: #fecaca; }
+
+.store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.store-badge.completed { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.store-badge.pending { background: #fefce8; color: #ca8a04; border: 1px solid #fef08a; }
+.store-badge.delayed { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+.stores-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #fafbfc;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.btn-close {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-close:hover { background: #e2e8f0; color: #334155; }
+
+/* ========== COLUMN FILTER ========== */
+.detail-table th {
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.col-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 6px;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all .2s;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.col-filter-btn:hover {
+  background: #f1f5f9;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.col-filter-btn .material-icons-outlined {
+  font-size: 14px;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 220px;
+  max-height: 240px;
+  display: flex;
+  flex-direction: column;
+  animation: slideDown .2s ease;
+  margin-top: 4px;
+}
+
+.filter-dropdown.hidden {
+  display: none;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.filter-dropdown-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.filter-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s;
+  line-height: 1;
+}
+
+.filter-close-btn:hover {
+  color: #991b1b;
+}
+
+.filter-dropdown-search {
+  padding: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.filter-search-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 11px;
+  outline: none;
+  transition: border-color .2s;
+  text-align: left;
+}
+
+.filter-search-input:focus {
+  border-color: #3b82f6;
+}
+
+.filter-dropdown-options {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 140px;
+  padding: 2px;
+  text-align: left;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #334155;
+  transition: background .15s;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.filter-option:hover {
+  background: #f1f5f9;
+}
+
+.filter-option input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.filter-dropdown-actions {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  background: #fafbfc;
+}
+
+.filter-action-btn {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  text-transform: uppercase;
+  letter-spacing: .08px;
+}
+
+.filter-action-btn.clear {
+  background: #fff;
+  color: #64748b;
+}
+
+.filter-action-btn.clear:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.filter-action-btn.apply {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.filter-action-btn.apply:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.no-results-cell {
+  text-align: center;
+  padding: 24px !important;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Detail Table */
+.detail-table-wrapper {
+  overflow-x: auto;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.detail-table thead {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.detail-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.detail-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+}
+
+.detail-table tbody tr:hover {
+  background: #fafbfc;
+}
+
+.status-badge-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge-detail.completed {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge-detail.pending {
+  background: #fefce8;
+  color: #ca8a04;
+  border: 1px solid #fef08a;
+}
+
+.status-badge-detail.delayed {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.completed-badge.yes {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.completed-badge.no {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.delay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.time-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.store-status-badge {
+  display: inline-flex;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  transition: all .15s ease;
+}
+
+.store-status-badge:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+.badge-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .3px;
+  transition: all .15s cubic-bezier(.4,0,.2,1);
+  cursor: pointer;
+  border: 1.5px solid;
+  user-select: none;
+}
+
+.badge-item.completed {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+  box-shadow: 0 1px 2px rgba(22,163,74,.08);
+}
+
+.badge-item.pending {
+  background: #fefce8;
+  color: #ca8a04;
+  border-color: #fef08a;
+  box-shadow: 0 1px 2px rgba(202,138,4,.08);
+}
+
+.badge-item.delayed {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  box-shadow: 0 1px 2px rgba(220,38,38,.08);
+}
+
+@media (max-width: 900px) {
+  .tiles-container { flex-wrap: nowrap; }
+  .tile { min-width: 148px; }
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .modal-content { width: 95%; max-height: 90vh; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV BAR -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <img src="https://cdn.plumpos.com/hw_prod_others/common/plum_images/app_icon/workflow_logo.png" alt="Logo" class="app-logo">
+    <span class="nav-divider"></span>
+    <span class="nav-label">My App</span>
+    <span class="nav-caret material-icons-outlined">expand_more</span>
+    <span class="nav-divider"></span>
+    <span class="material-icons-outlined nav-icon-sm">storefront</span>
+    <span class="nav-label">Famous Dave's Rancho #3066</span>
+    <span class="nav-caret material-icons-outlined">expand_more</span>
+  </div>
+  <div class="topnav-right">
+    <span class="weather-badge">
+      <span class="material-icons-outlined" style="font-size:18px;">wb_sunny</span>
+      <span>79°F</span>
+    </span>
+    <span class="nav-divider"></span>
+    <span class="time-badge">07:27<sup>A</sup> America/Los_Angeles</span>
+    <span class="nav-divider"></span>
+    <span class="material-icons-outlined nav-icon">notifications_none</span>
+    <span class="material-icons-outlined nav-icon">settings</span>
+    <div class="avatar">DA</div>
+  </div>
+</nav>
+
+<!-- LEFT SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-icon active"><span class="material-icons-outlined">home</span></div>
+  <div class="sidebar-icon"><span class="material-icons-outlined">calendar_today</span></div>
+  <div class="sidebar-icon"><span class="material-icons-outlined">people</span></div>
+  <div class="sidebar-icon"><span class="material-icons-outlined">bar_chart</span></div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+  <!-- TOOLBAR ROW -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="date-nav">
+        <div class="date-picker" onclick="toggleDateRangePopup()">
+          <span class="material-icons-outlined" style="font-size:16px;">date_range</span>
+          <span id="dateRangeDisplay">05/01/2026 - 05/13/2026</span>
+          <div class="date-range-popup" id="dateRangePopup">
+            <div class="range-title">Select Date Range</div>
+            <div class="date-input-group">
+              <label>From Date</label>
+              <input type="date" id="fromDate" value="2026-05-01">
+            </div>
+            <div class="date-input-group">
+              <label>To Date</label>
+              <input type="date" id="toDate" value="2026-05-13">
+            </div>
+            <div class="popup-actions">
+              <button class="popup-btn cancel" onclick="closeDateRangePopup()">Cancel</button>
+              <button class="popup-btn apply" onclick="applyDateRange()">Apply</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <span class="material-icons-outlined action-icon alert-icon">notifications_active</span>
+        <span class="material-icons-outlined action-icon info-icon">info</span>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <label class="toggle-label" for="regionalToggle">Regional View</label>
+      <div class="toggle-switch">
+        <input type="checkbox" id="regionalToggle" checked>
+        <span class="toggle-slider"></span>
+      </div>
+      <span class="material-icons-outlined settings-gear">settings</span>
+    </div>
+  </div>
+
+  <!-- KPI TILES -->
+  <div class="tiles-container" id="tilesContainer"></div>
+
+  <!-- PERFORMANCE SECTION -->
+  <div class="performance-container" id="performanceContainer"></div>
+
+  <!-- REGIONAL TABLE -->
+  <div class="regional-section" id="regionalSection">
+    <div class="regional-header">
+      <div class="regional-title">
+        <span class="material-icons-outlined">assessment</span>
+        <h3>Regional Task Status</h3>
+      </div>
+      <button class="regional-expand-btn" onclick="toggleRegionalExpand()" id="regionalExpandBtn">
+        <span class="material-icons-outlined">open_in_full</span>
+      </button>
+      <div class="stat-badges-container" id="regionalStats"></div>
+    </div>
+      <div class="table-wrapper">
+      <table class="regional-table" id="regionalTable">
+        <thead>
+          <tr>
+            <th>
+              Task
+              <button class="col-filter-btn" onclick="toggleColumnFilter('regionalTask', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="regionalTask">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('regionalTask')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options" id="regionalTaskOptions"></div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('regionalTask')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyRegionalFilter('regionalTask'); closeFilterDropdown('regionalTask');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>
+              Day Part
+              <button class="col-filter-btn" onclick="toggleColumnFilter('regionalDayPart', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="regionalDayPart">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('regionalDayPart')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options" id="regionalDayPartOptions"></div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('regionalDayPart')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyRegionalFilter('regionalDayPart'); closeFilterDropdown('regionalDayPart');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>
+              Module
+              <button class="col-filter-btn" onclick="toggleColumnFilter('regionalModule', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="regionalModule">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('regionalModule')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options" id="regionalModuleOptions"></div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('regionalModule')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyRegionalFilter('regionalModule'); closeFilterDropdown('regionalModule');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>Task Count</th>
+            <th>
+              Due Time
+              <button class="col-filter-btn" onclick="toggleColumnFilter('regionalDueTime', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="regionalDueTime">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('regionalDueTime')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options" id="regionalDueTimeOptions"></div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('regionalDueTime')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyRegionalFilter('regionalDueTime'); closeFilterDropdown('regionalDueTime');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>Store Status</th>
+          </tr>
+        </thead>
+        <tbody id="regionalBody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- STATUS MODAL -->
+<div class="modal-overlay" id="statusModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTaskName">Task Status - Stores</div>
+      <button class="modal-close" id="closeModal">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Status sections will be populated here -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn-close" id="closeModalBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== API RESPONSE DATA ==========
+const apiResponse = {
+  "isError": false,
+  "data": {
+    "sitePk": 1283, "cwkFlowPk": 127, "custWFMainPK": 2,
+    "previousDayOpen": false, "date": "2026-05-13", "edit": true,
+    "tiles": [
+      { "primaryKey": 1, "id": "FORECASTED_SALES", "name": "Forecasted Sales", "value": "$6,500.00", "yestdayValue": "$4,400.00", "wtdValue": "$14,900.00", "formatter": "DOLLAR" },
+      { "primaryKey": 2, "id": "ACTUAL_SALES", "name": "Actual Sales", "value": "$0.00", "yestdayValue": "$4,924.30", "wtdValue": "$10,461.30", "formatter": "DOLLAR" },
+      { "primaryKey": 4, "id": "LABOR_PERCENT", "name": "Labor %", "value": "0.00%", "yestdayValue": "28.87%", "wtdValue": "61.37%", "formatter": "PERCENT" },
+      { "primaryKey": 6, "id": "TIME_LOSS", "name": "Time Loss", "value": "$0.00", "yestdayValue": "$71.33", "wtdValue": "$203.83", "formatter": "DOLLAR" },
+      { "primaryKey": 7, "id": "LABOR_DOLLAR", "name": "Labor $", "value": "$0.00", "yestdayValue": "$1,421.68", "wtdValue": "$3,161.45", "formatter": "DOLLAR" },
+      { "primaryKey": 5, "id": "SCHEDULE_DOLLARS", "name": "Schedule Dollars", "value": "$1,996.56", "yestdayValue": "$1,686.42", "wtdValue": "$5,499.76", "formatter": "DOLLAR" },
+      { "primaryKey": 3, "id": "SCHEDULE_HRS", "name": "Schedule Hours", "value": "82.00 Hrs", "yestdayValue": "68.25 Hrs", "wtdValue": "223.50 Hrs", "formatter": "HRS" },
+      { "primaryKey": 8, "id": "ACTUAL_USAGE_PERCENT", "name": "Actual Usage %", "value": "NA", "yestdayValue": "NA", "wtdValue": "NA", "formatter": "PERCENT" },
+    ],
+    "wfDay": {
+      "stats": { "completed": false, "totalTasks": 34, "mandatoryTasks": 0, "optionalTasks": 34, "completedTasks": 0 },
+      "shifts": [
+        {
+          "index": 1, "name": "Start of Day",
+          "stat": { "completed": false, "totalTasks": 19, "completedTasks": 0 },
+          "modules": [
+            { "active": true, "name": "Forecast", "tasks": [
+              { "id": "REVIEW_FORECAST", "mandatory": false, "completed": false, "name": "Review Forecast", "noOfObjects": 1 },
+              { "id": "WEEKLY_CSH_MAIN", "mandatory": false, "completed": false, "name": "Actual Sales", "noOfObjects": 1 }
+            ]},
+            { "active": true, "name": "Food Management", "tasks": [
+              { "id": "UN_POSTED_INV", "mandatory": false, "completed": false, "name": "Unposted Inventory", "noOfObjects": 5 },
+              { "id": "PREP_SHEET", "mandatory": false, "completed": false, "name": "Prep Sheet", "noOfObjects": 0 },
+              { "id": "SUBMIT_ORDER", "mandatory": false, "completed": false, "name": "Take Order", "noOfObjects": 1 },
+              { "id": "TAKE_INVENTORY", "mandatory": false, "completed": false, "name": "Take Inventory", "noOfObjects": 1 },
+              { "id": "INV_COUNT_ALERT", "mandatory": false, "completed": false, "name": "Inventory Alerts", "noOfObjects": 0 },
+              { "id": "INV_VIT_COUNT_ALERT", "mandatory": false, "completed": false, "name": "Inventory VIT Alerts", "noOfObjects": 0 },
+              { "id": "ORDER_QUNANTITY_ALERT", "mandatory": false, "completed": false, "name": "Ordering Alerts", "noOfObjects": 0 }
+            ]},
+            { "active": true, "name": "Labor Management", "tasks": [
+              { "id": "SCHEDULE", "mandatory": false, "completed": false, "name": "Schedule", "noOfObjects": 1 },
+              { "id": "TIME_OFF_REQUEST_APPROVAL", "mandatory": false, "completed": false, "name": "Time Off Request", "noOfObjects": 22 }
+            ]},
+            { "active": true, "name": "Payroll Management", "tasks": [
+              { "id": "NON_POSTED_PAYROLL", "mandatory": false, "completed": false, "name": "Non Posted Payroll", "noOfObjects": 1 },
+              { "id": "PREV_TIMELOSS", "mandatory": false, "completed": false, "name": "Previous Day Time Loss Summary", "noOfObjects": 1 },
+              { "id": "PRE_DAY_PUNCHES", "mandatory": false, "completed": false, "name": "Previous Day Punches", "noOfObjects": 1 },
+              { "id": "PENDING_PUNCH_ACK", "mandatory": false, "completed": false, "name": "Pending Punch Acknowledgement", "noOfObjects": 19 },
+              { "id": "REVIEW_MISMATCH_PUNCH", "mandatory": false, "completed": false, "name": "Mismatch Punches", "noOfObjects": 0 },
+              { "id": "CURRENT_DAY_PUNCHES", "mandatory": false, "completed": false, "name": "Current Day Punches", "noOfObjects": 1 },
+              { "id": "REVIEW_OVERLAP_PUNCH", "mandatory": false, "completed": false, "name": "Overlap Punches", "noOfObjects": 0 },
+              { "id": "REVIEW_LONGHRS_SHIFT", "mandatory": false, "completed": false, "name": "Long Hour Shift", "noOfObjects": 0 }
+            ]}
+          ]
+        },
+        {
+          "index": 2, "name": "End of Day",
+          "stat": { "completed": false, "totalTasks": 15, "completedTasks": 0 },
+          "modules": [
+            { "active": true, "name": "Forecast", "tasks": [
+              { "id": "WEEKLY_CSH_MAIN", "mandatory": false, "completed": false, "name": "Actual Sales", "noOfObjects": 1 }
+            ]},
+            { "active": true, "name": "Food Management", "tasks": [
+              { "id": "UN_POSTED_INV", "mandatory": false, "completed": false, "name": "Unposted Inventory", "noOfObjects": 5 },
+              { "id": "PREP_SHEET", "mandatory": false, "completed": false, "name": "Prep Sheet", "noOfObjects": 0 },
+              { "id": "SUBMIT_ORDER", "mandatory": false, "completed": false, "name": "Take Order", "noOfObjects": 1 },
+              { "id": "TAKE_INVENTORY", "mandatory": false, "completed": false, "name": "Take Inventory", "noOfObjects": 1 },
+              { "id": "INV_COUNT_ALERT", "mandatory": false, "completed": false, "name": "Inventory Alerts", "noOfObjects": 0 },
+              { "id": "INV_VIT_COUNT_ALERT", "mandatory": false, "completed": false, "name": "Inventory VIT Alerts", "noOfObjects": 0 },
+              { "id": "ORDER_QUNANTITY_ALERT", "mandatory": false, "completed": false, "name": "Ordering Alerts", "noOfObjects": 0 }
+            ]},
+            { "active": true, "name": "Labor Management", "tasks": [
+              { "id": "SCHEDULE", "mandatory": false, "completed": false, "name": "Schedule", "noOfObjects": 1 },
+              { "id": "TIME_OFF_REQUEST_APPROVAL", "mandatory": false, "completed": false, "name": "Time Off Request", "noOfObjects": 22 }
+            ]},
+            { "active": true, "name": "Payroll Management", "tasks": [
+              { "id": "PENDING_PUNCH_ACK", "mandatory": false, "completed": false, "name": "Pending Punch Acknowledgement", "noOfObjects": 19 },
+              { "id": "REVIEW_OPEN_PUNCH", "mandatory": false, "completed": false, "name": "Review Open Punches", "noOfObjects": 0 },
+              { "id": "REVIEW_MISMATCH_PUNCH", "mandatory": false, "completed": false, "name": "Mismatch Punches", "noOfObjects": 0 },
+              { "id": "REVIEW_OVERLAP_PUNCH", "mandatory": false, "completed": false, "name": "Overlap Punches", "noOfObjects": 0 },
+              { "id": "REVIEW_LONGHRS_SHIFT", "mandatory": false, "completed": false, "name": "Long Hour Shift", "noOfObjects": 0 }
+            ]}
+          ]
+        }
+      ]
+    }
+  }
+};
+
+// ========== MOCK STORE DATA GENERATOR ==========
+function generateStoreStatusData(taskId, totalStores = 10) {
+  const statuses = { completed: [], pending: [], delayed: [] };
+  const storeCount = totalStores;
+  let completedCount = Math.floor(storeCount * 0.4);
+  let delayedCount = Math.floor(storeCount * 0.2);
+  let pendingCount = storeCount - completedCount - delayedCount;
+  
+  // Generate realistic store numbers (4-5 digit IDs)
+  const storeIds = [];
+  for (let i = 0; i < totalStores; i++) {
+    storeIds.push(String(1000 + Math.floor(Math.random() * 9000)));
+  }
+  
+  // Generate timestamps
+  const now = new Date();
+  const dueTime = parseDueTime("11:00 AM");
+  
+  for (let i = 0; i < completedCount; i++) {
+    const completedTime = new Date(dueTime.getTime() - Math.random() * 3600000);
+    statuses.completed.push({
+      storeId: `Store #${storeIds[i]}`,
+      completedAt: completedTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      isCompleted: true
+    });
+  }
+  for (let i = 0; i < pendingCount; i++) {
+    statuses.pending.push({
+      storeId: `Store #${storeIds[completedCount + i]}`,
+      isCompleted: false
+    });
+  }
+  for (let i = 0; i < delayedCount; i++) {
+    const isCompletedAfterDue = Math.random() > 0.5;
+    const completedTime = isCompletedAfterDue ? new Date(now.getTime() - Math.random() * 1800000) : null;
+    statuses.delayed.push({
+      storeId: `Store #${storeIds[completedCount + pendingCount + i]}`,
+      completedAt: completedTime ? completedTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : null,
+      isCompleted: isCompletedAfterDue
+    });
+  }
+  
+  return statuses;
+}
+
+// ========== TILE COLORS ==========
+const tileColors = ['dot-green','dot-teal','dot-purple','dot-red','dot-orange','dot-blue','dot-amber','dot-indigo','dot-cyan','dot-pink'];
+
+// ========== RENDER TILES ==========
+function renderTiles() {
+  const container = document.getElementById('tilesContainer');
+  container.innerHTML = apiResponse.data.tiles.map((tile, i) => `
+    <div class="tile">
+      <div class="tile-top">
+        <span class="tile-name">
+          <span class="tile-dot ${tileColors[i % tileColors.length]}"></span>
+          ${tile.name}
+        </span>
+        <div class="tile-chart-icon">
+          <span class="material-icons-outlined">bar_chart</span>
+        </div>
+      </div>
+      <div class="tile-value">${tile.value}</div>
+      <div class="tile-footer">
+        <div class="tile-sub">
+          <div class="tile-sub-label">Yesterday</div>
+          <div class="tile-sub-value">${tile.yestdayValue}</div>
+        </div>
+        <div class="tile-sub">
+          <div class="tile-sub-label">WTD</div>
+          <div class="tile-sub-value">${tile.wtdValue}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== DUE TIMES ==========
+const shiftDueTimes = { "Start of Day": "11:00 AM", "End of Day": "10:00 PM" };
+
+function parseDueTime(timeStr) {
+  const today = new Date();
+  const [time, period] = timeStr.split(' ');
+  let [hours, minutes] = time.split(':').map(Number);
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  today.setHours(hours, minutes, 0, 0);
+  return today;
+}
+
+function formatDelay(minutes) {
+  if (minutes <= 0) return '—';
+  if (minutes < 60) return `${minutes}m late`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m late` : `${h}h late`;
+}
+
+function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+
+// ========== STORE STATUS DATA MAP ==========
+let storeStatusDataMap = {};
+let storeStatusDataIndex = 0;
+
+// ========== BUILD GROUPED TASK LIST ==========
+function buildGroupedTaskList() {
+  const groupedByDayPart = {};
+  const now = new Date();
+  storeStatusDataMap = {};
+  storeStatusDataIndex = 0;
+  
+  apiResponse.data.wfDay.shifts.forEach(shift => {
+    const dueTimeStr = shiftDueTimes[shift.name] || "11:59 PM";
+    const dueDate = parseDueTime(dueTimeStr);
+    const isShiftPastDue = now > dueDate;
+    
+    const dayPartTasks = [];
+    shift.modules.forEach(mod => {
+      mod.tasks.forEach(task => {
+        const isDelayed = !task.completed && isShiftPastDue;
+        const delayMinutes = isDelayed ? Math.floor((now - dueDate) / 60000) : 0;
+        let status = 'pending';
+        if (task.completed) status = 'completed';
+        else if (isDelayed) status = 'delayed';
+        
+        const storeData = generateStoreStatusData(task.id);
+        const dataIndex = storeStatusDataIndex++;
+        storeStatusDataMap[dataIndex] = storeData;
+        
+        dayPartTasks.push({
+          name: task.name,
+          id: task.id,
+          module: mod.name,
+          mandatory: task.mandatory,
+          completed: task.completed,
+          noOfObjects: task.noOfObjects,
+          dayPart: shift.name,
+          dueTime: dueTimeStr,
+          status,
+          delayMinutes,
+          storeStatusData: storeData,
+          dataIndex: dataIndex
+        });
+      });
+    });
+    
+    groupedByDayPart[shift.name] = dayPartTasks;
+  });
+  
+  return groupedByDayPart;
+}
+
+// ========== RENDER GROUPED REGIONAL TABLE ==========
+let groupedTasks = {};
+let expandedGroups = {};
+let allStoreData = { completed: [], pending: [], delayed: [] };
+
+// ========== INDEPENDENT STORE PERFORMANCE DATA ==========
+function generateIndependentStorePerformanceData(numberOfStores = 100) {
+  const stores = [];
+  const baseStoreId = 1000;
+  
+  for (let i = 0; i < numberOfStores; i++) {
+    const storeId = `Store #${baseStoreId + i}`;
+    const total = 110;
+    const completed = Math.floor(30 + Math.random() * 60); // Random between 30-90
+    const delayed = Math.floor(0 + Math.random() * 20); // Random between 0-20
+    const percentage = ((completed / total) * 100).toFixed(1);
+    
+    stores.push({
+      storeId,
+      completed,
+      delayed,
+      total,
+      percentage
+    });
+  }
+  
+  // Sort by completed count (descending), then by delayed (ascending)
+  return stores.sort((a, b) => {
+    if (b.completed !== a.completed) {
+      return b.completed - a.completed;
+    }
+    return a.delayed - b.delayed;
+  });
+}
+
+function calculateStorePerformance() {
+  // Generate independent store performance data
+  const stores = generateIndependentStorePerformanceData(100);
+  console.log('Independent Store Performance Data:', stores);
+  return stores;
+}
+
+function renderStorePerformance() {
+  const stores = calculateStorePerformance();
+  if (stores.length === 0) return;
+  
+  const topStores = stores.slice(0, 5);
+  const bottomStores = stores.slice(-5).reverse();
+  
+  // Calculate overall metrics
+  let totalCompleted = 0, totalTasks = 0;
+  stores.forEach(store => {
+    totalCompleted += store.completed;
+    totalTasks += store.total;
+  });
+  const avgCompletion = (totalCompleted / totalTasks * 100).toFixed(1);
+  const storeCount = stores.length;
+  
+  // Count status distribution
+  const completedCount = allStoreData.completed.length;
+  const pendingCount = allStoreData.pending.length;
+  const delayedCount = allStoreData.delayed.length;
+  const totalStoreEntries = completedCount + pendingCount + delayedCount;
+  
+  let html = `
+    <div class="performance-section">
+      <div class="performance-main-grid">
+        <!-- LEFT CONTAINER: Store Performance -->
+        <div class="performance-left-container">
+          <div class="perf-title">
+            <h3>Store Performance</h3>
+            <a href="#" class="view-all-link">View All Stores</a>
+          </div>
+          <div class="perf-grid">
+            <!-- TOP 5 -->
+            <div class="performance-card">
+              <div class="performance-header">
+                <span class="material-icons-outlined" style="color: #16a34a;">trending_up</span>
+                <h4>TOP 5</h4>
+              </div>
+              <table class="performance-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Task Completed</th>
+                    <th>Delayed</th>
+                    <th>Completion %</th>
+                  </tr>
+                </thead>
+                <tbody>
+  `;
+  
+  topStores.forEach((store, idx) => {
+    html += `
+                  <tr>
+                    <td><div class="performance-rank">${idx + 1}</div></td>
+                    <td>
+                      <div class="store-name">${store.storeId}</div>
+                      <div class="store-city">San Francisco</div>
+                    </td>
+                    <td class="performance-score">${store.completed}/${store.total}</td>
+                    <td class="performance-delayed">${store.delayed}</td>
+                    <td class="performance-percentage">${store.percentage}%</td>
+                  </tr>
+    `;
+  });
+  
+  html += `
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- BOTTOM 5 -->
+            <div class="performance-card">
+              <div class="performance-header">
+                <span class="material-icons-outlined" style="color: #dc2626;">trending_down</span>
+                <h4>BOTTOM 5</h4>
+              </div>
+              <table class="performance-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Task Completed</th>
+                    <th>Delayed</th>
+                    <th>Completion %</th>
+                  </tr>
+                </thead>
+                <tbody>
+  `;
+  
+  bottomStores.forEach((store, idx) => {
+    html += `
+                  <tr>
+                    <td><div class="performance-rank negative">${idx + 1}</div></td>
+                    <td>
+                      <div class="store-name">${store.storeId}</div>
+                      <div class="store-city">San Francisco</div>
+                    </td>
+                    <td class="performance-score">${store.completed}/${store.total}</td>
+                    <td class="performance-delayed">${store.delayed}</td>
+                    <td class="performance-percentage">${store.percentage}%</td>
+                  </tr>
+    `;
+  });
+  
+  html += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- RIGHT COLUMN: 2 Containers -->
+        <div class="performance-right-column">
+          <!-- CONTAINER 1: Key Metrics -->
+          <div class="performance-right-container">
+            <h3>Key Metrics</h3>
+            <div class="metrics-grid">
+              <div class="metric-box" data-status="completed">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                  <span class="material-icons-outlined">check_circle_outline</span>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Completed</div>
+                  <div class="metric-value">${completedCount}</div>
+                  <div class="metric-pct">${totalStoreEntries > 0 ? ((completedCount / totalStoreEntries) * 100).toFixed(0) : 0}%</div>
+                </div>
+                <span class="metric-arrow material-icons-outlined">arrow_forward</span>
+              </div>
+              
+              <div class="metric-box" data-status="pending">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                  <span class="material-icons-outlined">schedule</span>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Pending</div>
+                  <div class="metric-value">${pendingCount}</div>
+                  <div class="metric-pct">${totalStoreEntries > 0 ? ((pendingCount / totalStoreEntries) * 100).toFixed(0) : 0}%</div>
+                </div>
+                <span class="metric-arrow material-icons-outlined">arrow_forward</span>
+              </div>
+              
+              <div class="metric-box" data-status="delayed">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                  <span class="material-icons-outlined">error_outline</span>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Delayed</div>
+                  <div class="metric-value">${delayedCount}</div>
+                  <div class="metric-pct">${totalStoreEntries > 0 ? ((delayedCount / totalStoreEntries) * 100).toFixed(0) : 0}%</div>
+                </div>
+                <span class="metric-arrow material-icons-outlined">arrow_forward</span>
+              </div>
+              
+              <div class="metric-box" data-status="total">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                  <span class="material-icons-outlined">storefront</span>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Total</div>
+                  <div class="metric-value">${storeCount}</div>
+                  <div class="metric-pct">Reporting</div>
+                </div>
+                <span class="metric-arrow material-icons-outlined">arrow_forward</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- CONTAINER 2: Regional Overview -->
+          <div class="performance-right-container">
+            <h3>Regional Overview</h3>
+            <div class="regional-summary">
+              <div class="summary-item">
+                <span class="summary-label">Avg Completion</span>
+                <span class="summary-value">${avgCompletion}%</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Total Tasks</span>
+                <span class="summary-value">${totalTasks}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const container = document.getElementById('performanceContainer');
+  if (container) {
+    container.innerHTML = html;
+    attachMetricBoxListeners();
+  }
+}
+
+function toggleRegionalExpand() {
+  const section = document.getElementById('regionalSection');
+  const btn = document.getElementById('regionalExpandBtn');
+  const performanceContainer = document.getElementById('performanceContainer');
+  const icon = btn.querySelector('.material-icons-outlined');
+  
+  if (section.classList.contains('expanded')) {
+    section.classList.remove('expanded');
+    performanceContainer.classList.remove('hidden-expanded');
+    icon.textContent = 'open_in_full';
+  } else {
+    section.classList.add('expanded');
+    performanceContainer.classList.add('hidden-expanded');
+    icon.textContent = 'close_fullscreen';
+  }
+}
+
+function toggleDateRangePopup() {
+  const popup = document.getElementById('dateRangePopup');
+  popup.classList.toggle('visible');
+}
+
+function closeDateRangePopup() {
+  const popup = document.getElementById('dateRangePopup');
+  popup.classList.remove('visible');
+}
+
+function applyDateRange() {
+  const fromDate = document.getElementById('fromDate').value;
+  const toDate = document.getElementById('toDate').value;
+  
+  if (!fromDate || !toDate) {
+    alert('Please select both dates');
+    return;
+  }
+  
+  if (new Date(fromDate) > new Date(toDate)) {
+    alert('From date must be before To date');
+    return;
+  }
+  
+  const fromFormatted = new Date(fromDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  const toFormatted = new Date(toDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  
+  document.getElementById('dateRangeDisplay').textContent = fromFormatted + ' - ' + toFormatted;
+  
+  window.selectedDateRange = { from: fromDate, to: toDate };
+  
+  regenerateDataForDateRange(fromDate, toDate);
+  
+  closeDateRangePopup();
+}
+
+function regenerateDataForDateRange(fromDate, toDate) {
+  groupedTasks = buildGroupedTaskList();
+  updateStats();
+  renderPerformance();
+  renderRegionalTable();
+  console.log('Data regenerated for date range: ' + fromDate + ' to ' + toDate);
+}
+
+function renderRegionalTable() {
+  groupedTasks = buildGroupedTaskList();
+  Object.keys(groupedTasks).forEach(dayPart => {
+    expandedGroups[dayPart] = true;
+  });
+  updateStats();
+  renderTable();
+}
+
+function updateStats() {
+  let delayed = 0, pending = 0, completed = 0;
+  allStoreData = { completed: [], pending: [], delayed: [] };
+  
+  Object.values(groupedTasks).forEach(tasks => {
+    tasks.forEach(t => {
+      // Aggregate ALL store data from this task, regardless of task status
+      if (t.storeStatusData.completed && t.storeStatusData.completed.length > 0) {
+        completed += t.storeStatusData.completed.length;
+        allStoreData.completed.push(...t.storeStatusData.completed.map(s => ({...s, taskName: t.name, dayPart: t.dayPart, dueTime: t.dueTime})));
+      }
+      if (t.storeStatusData.pending && t.storeStatusData.pending.length > 0) {
+        pending += t.storeStatusData.pending.length;
+        allStoreData.pending.push(...t.storeStatusData.pending.map(s => ({...s, taskName: t.name, dayPart: t.dayPart, dueTime: t.dueTime})));
+      }
+      if (t.storeStatusData.delayed && t.storeStatusData.delayed.length > 0) {
+        delayed += t.storeStatusData.delayed.length;
+        allStoreData.delayed.push(...t.storeStatusData.delayed.map(s => ({...s, taskName: t.name, dayPart: t.dayPart, dueTime: t.dueTime})));
+      }
+    });
+  });
+  
+  const total = delayed + pending + completed;
+  document.getElementById('regionalStats').innerHTML = `
+    <div class="stat-tile total" data-status="total">
+      <div class="stat-icon"><span class="material-icons-outlined">list</span></div>
+      <div class="stat-content">
+        <div class="stat-label">Total</div>
+        <div class="stat-value">${delayed + pending + completed}</div>
+      </div>
+    </div>
+    <div class="stat-tile delayed" data-status="delayed">
+      <div class="stat-icon"><span class="material-icons-outlined">error_outline</span></div>
+      <div class="stat-content">
+        <div class="stat-label">Delayed</div>
+        <div class="stat-value">${delayed}</div>
+      </div>
+    </div>
+    <div class="stat-tile pending" data-status="pending">
+      <div class="stat-icon"><span class="material-icons-outlined">schedule</span></div>
+      <div class="stat-content">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">${pending}</div>
+      </div>
+    </div>
+    <div class="stat-tile completed" data-status="completed">
+      <div class="stat-icon"><span class="material-icons-outlined">check_circle_outline</span></div>
+      <div class="stat-content">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value">${completed}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('regionalBody');
+  let html = '';
+  
+  const dayParts = ["Start of Day", "End of Day"];
+  dayParts.forEach(dayPart => {
+    const tasks = groupedTasks[dayPart] || [];
+    const isExpanded = expandedGroups[dayPart];
+    
+    // Group header
+    const tasksInGroup = tasks.length;
+    html += `
+      <tr class="group-header-row" data-group="${dayPart}">
+        <td colspan="6">
+          <span class="group-toggle ${isExpanded ? 'expanded' : ''}">›</span>
+          <strong>${dayPart}</strong>
+          <span style="color: #94a3b8; margin-left: 8px; font-weight: 500;">(${tasksInGroup} tasks)</span>
+        </td>
+      </tr>
+    `;
+    
+    // Task rows
+    if (isExpanded) {
+      tasks.forEach(task => {
+        const storeCompleted = task.storeStatusData.completed.length;
+        const storePending = task.storeStatusData.pending.length;
+        const storeDelayed = task.storeStatusData.delayed.length;
+        
+        html += `
+          <tr class="group-content-row visible regional-data-row" data-task="${task.name}" data-daypart="${task.dayPart || dayPart}" data-module="${task.module}" data-duetime="${task.dueTime}">
+            <td class="task-name-cell">${task.name}</td>
+            <td>${task.dayPart || dayPart}</td>
+            <td><span class="module-badge">${task.module}</span></td>
+            <td><span class="objects-count ${task.noOfObjects === 0 ? 'objects-zero' : ''}">${task.noOfObjects}</span></td>
+            <td><span class="due-time">${task.dueTime}</span></td>
+            <td>
+              <span class="store-status-badge" data-task-name="${task.name}" data-store-index="${task.dataIndex}">
+                ${storeCompleted > 0 ? `<span class="badge-item completed">${storeCompleted} Comp</span>` : ''}
+                ${storePending > 0 ? `<span class="badge-item pending">${storePending} Pend</span>` : ''}
+                ${storeDelayed > 0 ? `<span class="badge-item delayed">${storeDelayed} Del</span>` : ''}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+    }
+  });
+  
+  tbody.innerHTML = html;
+  attachGroupHeaderListeners();
+  attachStoreStatusListeners();
+  populateRegionalFilterOptions();
+}
+
+function populateRegionalFilterOptions() {
+  const rows = document.querySelectorAll('.regional-data-row');
+  
+  // Collect unique values
+  const tasks = new Set();
+  const dayParts = new Set();
+  const modules = new Set();
+  const dueTimes = new Set();
+  
+  rows.forEach(row => {
+    tasks.add(row.dataset.task);
+    dayParts.add(row.dataset.daypart);
+    modules.add(row.dataset.module);
+    dueTimes.add(row.dataset.duetime);
+  });
+  
+  // Populate dropdowns
+  const taskOptionsHtml = Array.from(tasks).sort().map(task => 
+    `<label class="filter-option"><input type="checkbox" value="${task}"> ${task}</label>`
+  ).join('');
+  document.getElementById('regionalTaskOptions').innerHTML = taskOptionsHtml;
+  
+  const dayPartOptionsHtml = Array.from(dayParts).sort().map(dayPart => 
+    `<label class="filter-option"><input type="checkbox" value="${dayPart}"> ${dayPart}</label>`
+  ).join('');
+  document.getElementById('regionalDayPartOptions').innerHTML = dayPartOptionsHtml;
+  
+  const moduleOptionsHtml = Array.from(modules).sort().map(module => 
+    `<label class="filter-option"><input type="checkbox" value="${module}"> ${module}</label>`
+  ).join('');
+  document.getElementById('regionalModuleOptions').innerHTML = moduleOptionsHtml;
+  
+  const dueTimeOptionsHtml = Array.from(dueTimes).sort().map(dueTime => 
+    `<label class="filter-option"><input type="checkbox" value="${dueTime}"> ${dueTime}</label>`
+  ).join('');
+  document.getElementById('regionalDueTimeOptions').innerHTML = dueTimeOptionsHtml;
+}
+
+function attachStoreStatusListeners() {
+  document.querySelectorAll('.store-status-badge').forEach(badge => {
+    badge.addEventListener('click', function() {
+      const taskName = this.dataset.taskName;
+      const storeIndex = parseInt(this.dataset.storeIndex);
+      const storeData = storeStatusDataMap[storeIndex];
+      openStatusModal(taskName, storeData);
+    });
+  });
+}
+
+function attachGroupHeaderListeners() {
+  document.querySelectorAll('.group-header-row').forEach(row => {
+    row.addEventListener('click', function() {
+      const dayPart = this.dataset.group;
+      expandedGroups[dayPart] = !expandedGroups[dayPart];
+      renderTable();
+    });
+  });
+}
+
+function applyRegionalFilter(column) {
+  const columnMap = {
+    'regionalTask': 'data-task',
+    'regionalDayPart': 'data-daypart',
+    'regionalModule': 'data-module',
+    'regionalDueTime': 'data-duetime'
+  };
+  
+  const rows = document.querySelectorAll('.regional-data-row');
+  const groupHeaders = document.querySelectorAll('.group-header-row');
+  
+  // Remove any existing "no results" message
+  document.querySelectorAll('.no-results-cell').forEach(el => el.parentElement.remove());
+  
+  // Get all active filters across all columns
+  const activeFilters = getActiveRegionalFilters();
+  
+  // Filter rows based on ALL active filters
+  rows.forEach(row => {
+    let shouldShow = true;
+    
+    // Check if row matches all active filters
+    for (const [dataAttr, filterValues] of Object.entries(activeFilters)) {
+      const rowValue = row.getAttribute(dataAttr);
+      if (!filterValues.includes(rowValue)) {
+        shouldShow = false;
+        break;
+      }
+    }
+    
+    row.style.display = shouldShow ? '' : 'none';
+  });
+  
+  // Hide/show group headers based on visible content
+  groupHeaders.forEach(header => {
+    const dayPart = header.dataset.group;
+    const visibleInGroup = document.querySelectorAll(`.group-content-row[data-daypart="${dayPart}"]:not([style*="display: none"])`).length;
+    header.style.display = visibleInGroup > 0 ? '' : 'none';
+  });
+  
+  // Check if any data rows are visible
+  const visibleCount = document.querySelectorAll('.regional-data-row:not([style*="display: none"])').length;
+  if (visibleCount === 0) {
+    document.querySelector('#regionalBody')?.insertAdjacentHTML('beforeend', 
+      '<tr><td colspan="6" class="no-results-cell">No matching records found</td></tr>');
+  }
+}
+
+function attachStatTileListeners() {
+  // Stat tiles functionality moved to Key Metrics tiles in renderStorePerformance()
+  // This function is kept for reference but no longer used
+}
+
+function attachMetricBoxListeners() {
+  document.querySelectorAll('.metric-box').forEach(box => {
+    box.addEventListener('click', function() {
+      const status = this.dataset.status;
+      openDetailModal(status);
+    });
+  });
+}
+
+// ========== MODAL FUNCTIONS ==========
+function openDetailModal(status) {
+  let data = [];
+  let displayStatus = '';
+  
+  if (status === 'total') {
+    data = [...allStoreData.completed, ...allStoreData.pending, ...allStoreData.delayed];
+    displayStatus = 'All Tasks';
+  } else if (status === 'completed') {
+    data = allStoreData.completed || [];
+    displayStatus = 'Completed';
+  } else if (status === 'delayed') {
+    data = allStoreData.delayed || [];
+    displayStatus = 'Delayed';
+  } else {
+    data = allStoreData[status] || [];
+    displayStatus = capitalize(status);
+  }
+  
+  document.getElementById('modalTaskName').textContent = `${displayStatus} Tasks`;
+  
+  const modalBody = document.getElementById('modalBody');
+  
+  console.log(`Status: ${status}, Data count: ${data.length}, All Store Data:`, allStoreData);
+  
+  if (!data || data.length === 0) {
+    modalBody.innerHTML = '<div class="empty-state">No tasks found</div>';
+    document.getElementById('statusModal').classList.add('active');
+    return;
+  }
+  
+  // Store original data and current filter state
+  const modalElement = document.getElementById('statusModal');
+  modalElement.dataset.fullData = JSON.stringify(data);
+  modalElement.dataset.status = status;
+  
+  // Extract unique values for filters
+  const uniqueStores = [...new Set(data.map(item => item.storeId))].sort();
+  const uniqueTaskNames = [...new Set(data.map(item => item.taskName))].sort();
+  const uniqueDayParts = [...new Set(data.map(item => item.dayPart))].sort();
+  const uniqueDueTimes = [...new Set(data.map(item => item.dueTime))].sort();
+  
+  let html = `
+    <div class="detail-table-wrapper">
+      <table class="detail-table" id="detailTable">
+        <thead>
+          <tr>
+            <th>
+              Store Number
+              <button class="col-filter-btn" onclick="toggleColumnFilter('storeId', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="storeId">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('storeId')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options">
+                  ${uniqueStores.map(store => `<label class="filter-option"><input type="checkbox" value="${store}"> ${store}</label>`).join('')}
+                </div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('storeId')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyColumnFilter('storeId'); closeFilterDropdown('storeId');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>
+              Task Name
+              <button class="col-filter-btn" onclick="toggleColumnFilter('taskName', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="taskName">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('taskName')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options">
+                  ${uniqueTaskNames.map(task => `<label class="filter-option"><input type="checkbox" value="${task}"> ${task}</label>`).join('')}
+                </div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('taskName')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyColumnFilter('taskName'); closeFilterDropdown('taskName');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>
+              Day Part
+              <button class="col-filter-btn" onclick="toggleColumnFilter('dayPart', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="dayPart">
+                <div class="filter-dropdown-header">
+                  <span class="filter-dropdown-title">Filter</span>
+                  <button class="filter-close-btn" onclick="closeFilterDropdown('dayPart')">&times;</button>
+                </div>
+                <div class="filter-dropdown-search">
+                  <input type="text" placeholder="Search..." class="filter-search-input" onkeyup="filterDropdownOptions(this)">
+                </div>
+                <div class="filter-dropdown-options">
+                  ${uniqueDayParts.map(dayPart => `<label class="filter-option"><input type="checkbox" value="${dayPart}"> ${dayPart}</label>`).join('')}
+                </div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('dayPart')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyColumnFilter('dayPart'); closeFilterDropdown('dayPart');">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>
+              Due Time
+              <button class="col-filter-btn" onclick="toggleColumnFilter('dueTime', this)">
+                <span class="material-icons-outlined">filter_alt</span>
+              </button>
+              <div class="filter-dropdown hidden" data-column="dueTime">
+                <div class="filter-dropdown-options">
+                  ${uniqueDueTimes.map(time => `<label class="filter-option"><input type="checkbox" value="${time}" onchange="applyColumnFilter('dueTime')"> ${time}</label>`).join('')}
+                </div>
+                <div class="filter-dropdown-actions">
+                  <button class="filter-action-btn clear" onclick="clearColumnFilter('dueTime')">Clear</button>
+                  <button class="filter-action-btn apply" onclick="applyColumnFilter('dueTime')">Apply</button>
+                </div>
+              </div>
+            </th>
+            <th>Status</th>
+            ${(status === 'delayed') ? '<th>Delayed By</th>' : ''}
+            ${(status === 'delayed') ? '<th>Is Completed?</th>' : ''}
+            ${(status === 'completed') ? '<th>Completed At</th>' : ''}
+            ${(status === 'total') ? '<th>Is Completed?</th>' : ''}
+            ${(status === 'total') ? '<th>Completed At</th>' : ''}
+          </tr>
+        </thead>
+        <tbody id="detailTableBody">
+  `;
+  
+  data.forEach(item => {
+    const itemStatus = item.isCompleted ? (item.completedAt ? 'completed' : 'delayed') : 'pending';
+    const statusBadge = capitalize(itemStatus);
+    let statusCol = '';
+    let delayedByCol = '';
+    let completedCol = '';
+    
+    if (status === 'total') {
+      statusCol = `<td><span class="status-badge-detail ${itemStatus}">${statusBadge}</span></td>`;
+      completedCol = `<td><span class="completed-badge ${item.isCompleted ? 'yes' : 'no'}">${item.isCompleted ? 'Yes' : 'No'}</span></td>`;
+      completedCol += `<td><span class="time-text">${item.completedAt || '-'}</span></td>`;
+    } else if (status === 'delayed') {
+      statusCol = `<td><span class="status-badge-detail delayed">Delayed</span></td>`;
+      const dueTime = new Date(`2026-05-13 ${item.dueTime}`);
+      const now = new Date();
+      const delayMs = now - dueTime;
+      const delayMins = Math.floor(delayMs / 60000);
+      const hours = Math.floor(delayMins / 60);
+      const mins = delayMins % 60;
+      const delayText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+      delayedByCol = `<td><span class="delay-badge">${delayText}</span></td>`;
+      completedCol = `<td><span class="completed-badge ${item.isCompleted ? 'yes' : 'no'}">${item.isCompleted ? 'Yes' : 'No'}</span></td>`;
+    } else if (status === 'completed') {
+      statusCol = `<td><span class="status-badge-detail completed">Completed</span></td>`;
+      completedCol = `<td><span class="time-text">${item.completedAt || '-'}</span></td>`;
+    } else {
+      statusCol = `<td><span class="status-badge-detail pending">Pending</span></td>`;
+    }
+    
+    html += `
+      <tr class="detail-row" data-store="${item.storeId}" data-task="${item.taskName}" data-daypart="${item.dayPart}" data-duetime="${item.dueTime}">
+        <td><strong>${item.storeId}</strong></td>
+        <td>${item.taskName}</td>
+        <td>${item.dayPart}</td>
+        <td>${item.dueTime}</td>
+        ${statusCol}
+        ${delayedByCol}
+        ${completedCol}
+      </tr>
+    `;
+  });
+  
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  modalBody.innerHTML = html;
+  document.getElementById('statusModal').classList.add('active');
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.col-filter-btn') && !e.target.closest('.filter-dropdown')) {
+      document.querySelectorAll('.filter-dropdown').forEach(dd => dd.classList.add('hidden'));
+    }
+  });
+}
+
+function toggleColumnFilter(column, btn) {
+  const dropdown = btn.nextElementSibling;
+  const allDropdowns = document.querySelectorAll('.filter-dropdown');
+  
+  allDropdowns.forEach(dd => {
+    if (dd !== dropdown) dd.classList.add('hidden');
+  });
+  
+  dropdown.classList.toggle('hidden');
+  if (!dropdown.classList.contains('hidden')) {
+    dropdown.querySelector('.filter-search-input')?.focus();
+  }
+}
+
+function closeFilterDropdown(column) {
+  const dropdown = document.querySelector(`.filter-dropdown[data-column="${column}"]`);
+  if (dropdown) {
+    dropdown.classList.add('hidden');
+  }
+}
+
+function getActiveColumnFilters() {
+  const activeFilters = {};
+  const columnMap = {
+    storeId: 'data-store',
+    taskName: 'data-task',
+    dayPart: 'data-daypart',
+    dueTime: 'data-duetime'
+  };
+  
+  Object.keys(columnMap).forEach(column => {
+    const dropdown = document.querySelector(`.filter-dropdown[data-column="${column}"]`);
+    if (dropdown) {
+      const selectedValues = Array.from(dropdown.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+      if (selectedValues.length > 0) {
+        activeFilters[columnMap[column]] = selectedValues;
+      }
+    }
+  });
+  
+  return activeFilters;
+}
+
+function getActiveRegionalFilters() {
+  const activeFilters = {};
+  const columnMap = {
+    'regionalTask': 'data-task',
+    'regionalDayPart': 'data-daypart',
+    'regionalModule': 'data-module',
+    'regionalDueTime': 'data-duetime'
+  };
+  
+  Object.keys(columnMap).forEach(column => {
+    const dropdown = document.querySelector(`[data-column="${column}"]`);
+    if (dropdown) {
+      const selectedValues = Array.from(dropdown.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+      if (selectedValues.length > 0) {
+        activeFilters[columnMap[column]] = selectedValues;
+      }
+    }
+  });
+  
+  return activeFilters;
+}
+
+function filterDropdownOptions(input) {
+  const search = input.value.toLowerCase();
+  const options = input.closest('.filter-dropdown').querySelectorAll('.filter-option');
+  
+  options.forEach(option => {
+    const label = option.textContent.toLowerCase();
+    option.style.display = label.includes(search) ? '' : 'none';
+  });
+}
+
+function clearColumnFilter(column) {
+  const dropdown = document.querySelector(`.filter-dropdown[data-column="${column}"]`);
+  dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  
+  // Re-apply filters to respect other active filters
+  // Determine if this is a regional filter or modal filter
+  if (column.startsWith('regional')) {
+    applyRegionalFilter(column);
+  } else {
+    applyColumnFilter(column);
+  }
+}
+
+function applyColumnFilter(column) {
+  const rows = document.querySelectorAll('.detail-row');
+  let visibleCount = 0;
+  
+  // Get all active filters across all columns
+  const activeFilters = getActiveColumnFilters();
+  
+  const columnMap = {
+    storeId: 'data-store',
+    taskName: 'data-task',
+    dayPart: 'data-daypart',
+    dueTime: 'data-duetime'
+  };
+  
+  // Filter rows based on ALL active filters
+  rows.forEach(row => {
+    let shouldShow = true;
+    
+    // Check if row matches all active filters
+    for (const [dataAttr, filterValues] of Object.entries(activeFilters)) {
+      const rowValue = row.getAttribute(dataAttr);
+      if (!filterValues.includes(rowValue)) {
+        shouldShow = false;
+        break;
+      }
+    }
+    
+    if (shouldShow) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Show/hide no results message
+  const tbody = document.getElementById('detailTableBody');
+  let noResultsRow = tbody.querySelector('.no-results-row');
+  
+  if (visibleCount === 0) {
+    if (!noResultsRow) {
+      noResultsRow = document.createElement('tr');
+      noResultsRow.className = 'no-results-row';
+      noResultsRow.innerHTML = '<td colspan="100%" class="no-results-cell">No results found</td>';
+      tbody.appendChild(noResultsRow);
+    }
+    noResultsRow.style.display = '';
+  } else {
+    if (noResultsRow) {
+      noResultsRow.style.display = 'none';
+    }
+  }
+  
+  document.querySelector(`.filter-dropdown[data-column="${column}"]`).classList.add('hidden');
+}
+
+function openStatusModal(taskName, storeStatusData) {
+  document.getElementById('modalTaskName').textContent = `${taskName} - Store Status`;
+  
+  const modalBody = document.getElementById('modalBody');
+  let html = '';
+  
+  const statusOrder = [
+    { key: 'completed', title: 'Completed', color: 'completed' },
+    { key: 'pending', title: 'Pending', color: 'pending' },
+    { key: 'delayed', title: 'Delayed', color: 'delayed' }
+  ];
+  
+  statusOrder.forEach(({ key, title, color }) => {
+    const stores = storeStatusData[key];
+    if (stores && stores.length > 0) {
+      html += `
+        <div class="status-section">
+          <div class="status-section-title ${color}">
+            <span class="material-icons-outlined" style="font-size: 16px;">
+              ${color === 'completed' ? 'check_circle_outline' : color === 'pending' ? 'schedule' : 'error_outline'}
+            </span>
+            ${title} (${stores.length})
+          </div>
+          <div class="stores-grid">
+            ${stores.map(store => {
+              const storeLabel = typeof store === 'string' ? store : store.storeId;
+              return `<span class="store-badge ${color}">${storeLabel}</span>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+  });
+  
+  if (html === '') {
+    html = '<div class="empty-state">No store data available</div>';
+  }
+  
+  modalBody.innerHTML = html;
+  document.getElementById('statusModal').classList.add('active');
+}
+
+function closeStatusModal() {
+  document.getElementById('statusModal').classList.remove('active');
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', () => {
+  renderTiles();
+  renderRegionalTable();
+  renderStorePerformance();
+
+  document.getElementById('regionalToggle').addEventListener('change', function() {
+    document.getElementById('regionalSection').classList.toggle('hidden', !this.checked);
+  });
+  
+  document.getElementById('closeModal').addEventListener('click', closeStatusModal);
+  document.getElementById('closeModalBtn').addEventListener('click', closeStatusModal);
+  
+  document.getElementById('statusModal').addEventListener('click', function(e) {
+    if (e.target === this) closeStatusModal();
+  });
+});
+</script>
+</body>
+</html>
